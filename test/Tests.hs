@@ -4,8 +4,8 @@ module Main where
 
 import Data.Map
 import Hedgehog
+import Hedgehog.Range
 import qualified Hedgehog.Gen as Gen
-import qualified Hedgehog.Range as Range
 import Papa
 import Test.Tasty(defaultMain, testGroup)
 import Test.Tasty.Hedgehog
@@ -28,17 +28,15 @@ prop_reverse =
     xs <- forAll $ alpha100
     reverse (reverse xs) === xs
 
-undefined = undefined
-
 unicode100 ::
   Gen String
 unicode100 =
-  Gen.list (Range.linear 0 100) Gen.unicode
+  Gen.list (linear 0 100) Gen.unicode
 
 alpha100 ::
   Gen String
 alpha100 =
-  Gen.list (Range.linear 0 100) Gen.alpha
+  Gen.list (linear 0 100) Gen.alpha
 
 genQuoteType ::
   Gen QuoteType
@@ -68,8 +66,8 @@ genAttr ::
   Gen Attr
 genAttr =
   do  it <- unicode100
-      cl <- Gen.list (Range.linear 0 100) (unicode100)
-      kv <- Gen.list (Range.linear 0 100) ((,) <$> unicode100 <*> unicode100)
+      cl <- Gen.list (linear 0 100) unicode100
+      kv <- Gen.list (linear 0 100) ((,) <$> unicode100 <*> unicode100)
       pure (it, cl, kv)
 
 genFormat ::
@@ -89,24 +87,24 @@ genInline =
   Gen.choice
     [
       Str <$> unicode100
-    , Emph <$> genInlines (Range.linear 0 100)
-    , Strong <$> genInlines (Range.linear 0 100)
-    , Strikeout <$> genInlines (Range.linear 0 100)
-    , Superscript <$> genInlines (Range.linear 0 100)
-    , Subscript <$> genInlines (Range.linear 0 100)
-    , SmallCaps <$> genInlines (Range.linear 0 100)
-    , Quoted <$> genQuoteType <*> genInlines (Range.linear 0 100)
-    , Cite <$> genCitations (Range.linear 0 100) <*> genInlines (Range.linear 0 100)
+    , Emph <$> genInlines (linear 0 100)
+    , Strong <$> genInlines (linear 0 100)
+    , Strikeout <$> genInlines (linear 0 100)
+    , Superscript <$> genInlines (linear 0 100)
+    , Subscript <$> genInlines (linear 0 100)
+    , SmallCaps <$> genInlines (linear 0 100)
+    , Quoted <$> genQuoteType <*> genInlines (linear 0 100)
+    , Cite <$> genCitations (linear 0 100) <*> genInlines (linear 0 100)
     , Code <$> genAttr <*> unicode100
     , pure Definition.Space
     , pure SoftBreak
     , pure LineBreak
     , Math <$> genMathType <*> unicode100
     , RawInline <$> genFormat <*> unicode100 
-    , Link <$> genAttr <*> genInlines (Range.linear 0 100) <*> genTarget 
-    , Image <$> genAttr <*> genInlines (Range.linear 0 100) <*> genTarget 
-    , Note <$> genBlocks (Range.linear 0 100)
-    , Span <$> genAttr <*> genInlines (Range.linear 0 100)
+    , Link <$> genAttr <*> genInlines (linear 0 100) <*> genTarget 
+    , Image <$> genAttr <*> genInlines (linear 0 100) <*> genTarget 
+    , Note <$> genBlocks (linear 0 100)
+    , Span <$> genAttr <*> genInlines (linear 0 100)
     ]
    
 genBlocks ::
@@ -115,10 +113,76 @@ genBlocks ::
 genBlocks r =
   Gen.list r genBlock
 
+genListNumberDelim ::
+  Gen ListNumberDelim
+genListNumberDelim =
+  Gen.element
+    [
+      DefaultDelim
+    , Period
+    , OneParen
+    , TwoParens    
+    ]
+
+genListNumberStyle ::
+  Gen ListNumberStyle
+genListNumberStyle =
+  Gen.element
+    [
+      DefaultStyle
+    , Example
+    , Decimal
+    , LowerRoman
+    , UpperRoman
+    , LowerAlpha
+    , UpperAlpha
+    ]
+
+genListAttributes ::
+  Gen ListAttributes
+genListAttributes =
+  (,,) <$>
+    Gen.int (linear 0 100) <*>
+    genListNumberStyle <*>
+    genListNumberDelim
+
+genAlignments ::
+  Range Int
+  -> Gen [Alignment]
+genAlignments r =
+  Gen.list r genAlignment
+
+genAlignment ::
+  Gen Alignment
+genAlignment =
+  Gen.element
+    [
+      AlignLeft
+    , AlignRight
+    , AlignCenter
+    , AlignDefault
+    ]
+
 genBlock ::
   Gen Block
 genBlock =
-  undefined
+  Gen.choice
+    [
+      Plain <$> genInlines (linear 0 100)
+    , Para <$> genInlines (linear 0 100)
+    , LineBlock <$> Gen.list (linear 0 100) (genInlines (linear 0 100))
+    , CodeBlock <$> genAttr <*> unicode100
+    , RawBlock <$> genFormat <*> unicode100
+    , BlockQuote <$> genBlocks (linear 0 100)
+    , OrderedList <$> genListAttributes <*> Gen.list (linear 0 100) (genBlocks (linear 0 100))
+    , BulletList <$> Gen.list (linear 0 100) (genBlocks (linear 0 100))
+    , DefinitionList <$> Gen.list (linear 0 100) ((,) <$> genInlines (linear 0 100) <*> Gen.list (linear 0 100) (genBlocks (linear 0 100)))
+    , Header <$> Gen.int (linear 0 100) <*> genAttr <*> genInlines (linear 0 100)
+    , pure HorizontalRule
+    , Table <$> genInlines (linear 0 100) <*> genAlignments (linear 0 100) <*> Gen.list (linear 0 100) (Gen.double (linearFrac 0 100)) <*> Gen.list (linear 0 100) (genBlocks (linear 0 100)) <*> Gen.list (linear 0 100) (Gen.list (linear 0 100) (genBlocks (linear 0 100)))
+    , Div <$> genAttr <*> genBlocks (linear 0 100)
+    , pure Null
+    ]
 
 genCitations ::
   Range Int
@@ -131,11 +195,11 @@ genCitation ::
 genCitation =
   Citation <$>
     unicode100 <*>
-    genInlines (Range.linear 0 100) <*>
-    genInlines (Range.linear 0 100) <*>
+    genInlines (linear 0 100) <*>
+    genInlines (linear 0 100) <*>
     genCitationMode <*>
-    Gen.int (Range.linear 0 100) <*>
-    Gen.int (Range.linear 0 100)
+    Gen.int (linear 0 100) <*>
+    Gen.int (linear 0 100)
 
 genCitationMode ::
   Gen CitationMode
@@ -161,15 +225,15 @@ genMetaValue =
       MetaBool <$> Gen.bool
     , MetaString <$> alpha100
     , MetaMap <$> genMapMetaValue
-    , MetaList <$> genMetaValues (Range.linear 0 100)
-    , MetaInlines <$> genInlines (Range.linear 0 100)
-    , MetaBlocks <$> genBlocks (Range.linear 0 100)
+    , MetaList <$> genMetaValues (linear 0 100)
+    , MetaInlines <$> genInlines (linear 0 100)
+    , MetaBlocks <$> genBlocks (linear 0 100)
     ]
 
 genMapMetaValue ::
   Gen (Map String MetaValue)
 genMapMetaValue =
-  Gen.map (Range.linear 0 100) genMetaPair
+  Gen.map (linear 0 100) genMetaPair
 
 genMetaPair ::
   Gen (String, MetaValue)
