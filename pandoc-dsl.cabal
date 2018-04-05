@@ -1,0 +1,81 @@
+name:               pandoc-dsl
+version:            0.0.1
+license:            BSD3
+license-file:       LICENCE
+author:             Queensland Functional Programming Lab <oᴉ˙ldɟb@llǝʞsɐɥ>
+maintainer:         Queensland Functional Programming Lab <oᴉ˙ldɟb@llǝʞsɐɥ>
+copyright:          Copyright (c) 2018, Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230.
+synopsis:           For building pandoc documents
+category:           Text
+description:       
+  <<http://i.imgur.com/uZnp9ke.png>>
+  .
+  For building pandoc documents.
+homepage:           https://github.com/qfpl/pandoc-dsl
+bug-reports:        https://github.com/qfpl/pandoc-dsl/issues
+cabal-version:      >= 1.10
+build-type:         Simple
+extra-source-files: changelog
+
+source-repository   head
+  type:             git
+  location:         git@github.com:qfpl/pandoc-dsl.git
+
+flag                small_base
+  description:      Choose the new, split-up base package.
+
+library
+  default-language:
+                    Haskell2010
+
+  build-depends:
+                    base >= 4.8 && < 5
+                    , lens >= 4 && < 5
+                    , pandoc-lens >= 0.6 && < 0.7
+                    , pandoc-types >= 1.16 && < 1.20
+                    , papa >= 0.3 && < 0.4
+                    
+  ghc-options:
+                    -Wall
+
+  default-extensions:
+  
+                    NoImplicitPrelude
+
+  hs-source-dirs:
+                    src
+
+  exposed-modules:
+                    Text
+
+test-suite          tests
+
+  build-depends:      QuickCheck >= 2.9.2 && <2.11
+                    , base >= 4.8 && < 5
+                    , checkers >= 0.4.6 && <0.5
+                    , containers >= 0.5 && < 0.6
+                    , hedgehog >= 0.5 && < 0.6
+                    , lens >=4.15 && <4.16
+                    , pandoc-lens >= 0.6 && < 0.7
+                    , pandoc-types >= 1.16 && < 1.20
+                    , papa >= 0.3 && < 0.4                    
+                    , tasty >=0.11 && <0.12
+                    , tasty-hedgehog >= 0.1 && < 0.3
+                    , tasty-hunit >=0.9 && <0.10
+                    , tasty-quickcheck >=0.8.4 && <0.10
+                    , pandoc-dsl
+
+  type:             
+                    exitcode-stdio-1.0
+
+  main-is:          
+                    Tests.hs
+
+  hs-source-dirs:   
+                    test
+
+  default-language: 
+                    Haskell2010
+
+  ghc-options:       
+                    -Wall
