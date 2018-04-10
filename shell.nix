@@ -1,6 +1,11 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "default" }:
+{ nixpkgs ? import <nixpkgs> {}, compiler ? "default", doBenchmark ? false }:
+
 let
+
   inherit (nixpkgs) pkgs;
-  drv = import ./default.nix { inherit nixpkgs compiler; };
+
+  f = import ./default.nix { inherit nixpkgs compiler; };
+
 in
-  if pkgs.lib.inNixShell then drv.env else drv
+
+  f.env
