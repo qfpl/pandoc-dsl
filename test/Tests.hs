@@ -12,21 +12,27 @@ import Test.Tasty.Hedgehog
 import Text.Pandoc.Definition
 import qualified Text.Pandoc.Definition as Definition
 
+import Text.Pandoc.Writers.AsciiDoc
+import Data.Text
+import Text.Pandoc.Class
+
 main ::
   IO ()
 main =
   defaultMain $ testGroup "Tests" [
     testGroup "Pandoc" [
-      testProperty "y" prop_reverse
+      -- testProperty "y" prop_reverse
     ]
   ]
 
+{-
 prop_reverse ::
   Property
 prop_reverse =
   property $ do
     xs <- forAll $ alpha100
     reverse (reverse xs) === xs
+-}
 
 unicode100 ::
   Gen String
@@ -252,3 +258,15 @@ genPandoc ::
   Gen Pandoc
 genPandoc =
   Pandoc <$> genMeta <*> genBlocks (linear 0 40)
+
+----
+
+j ::
+  PandocMonad m =>
+  Pandoc
+  -> m Text
+j =
+  undefined
+
+
+-- writeAsciiDoc :: PandocMonad m => WriterOptions -> Pandoc -> m Text

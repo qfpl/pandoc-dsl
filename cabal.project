@@ -1,0 +1,5 @@
+packages: .
+
+package zlib
+  flags: +pkg-config
+

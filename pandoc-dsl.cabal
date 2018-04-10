@@ -34,7 +34,8 @@ library
                     , pandoc-lens >= 0.6 && < 0.7
                     , pandoc-types >= 1.16 && < 1.20
                     , papa >= 0.3 && < 0.4
-                    
+                    , text
+                    , pandoc >= 2.1
   ghc-options:
                     -Wall
 
@@ -63,7 +64,9 @@ test-suite          tests
                     , tasty-hedgehog >= 0.1 && < 0.3
                     , tasty-hunit >=0.9 && <0.10
                     , tasty-quickcheck >=0.8.4 && <0.10
+                    , text
                     , pandoc-dsl
+                    , pandoc >= 2.0
 
   type:             
                     exitcode-stdio-1.0
